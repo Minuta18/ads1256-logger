@@ -7,7 +7,7 @@ class ADSReader:
 
         self.channels = [i for i in range(8)]
 
-    def read_channels(self) -> list[float]:
+    def read_channels(self) -> list[int]:
         raw_data = self.ads.read_sequence(self.channels)
         return raw_data
     
