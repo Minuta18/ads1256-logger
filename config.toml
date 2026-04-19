@@ -1,0 +1,12 @@
+output_file = "seismic_data.csv"
+buffer_size = 1000
+
+[spi]
+spi_bus = 0
+spi_device = 0
+
+[ads]
+gain = 1
+drate = 2000
+v_ref = 2.5
+channels = [0, 1, 2, 3, 4, 5, 6, 7]

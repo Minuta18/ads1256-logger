@@ -1,1 +1,1 @@
-# ads1256-recorder
+# ads1256-logger

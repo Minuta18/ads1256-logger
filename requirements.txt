@@ -1,0 +1,9 @@
+annotated-types==0.7.0
+pigpio==1.78
+pipyadc==2.1
+pydantic==2.13.2
+pydantic-settings==2.13.1
+pydantic_core==2.46.2
+python-dotenv==1.2.2
+typing-inspection==0.4.2
+typing_extensions==4.15.0
