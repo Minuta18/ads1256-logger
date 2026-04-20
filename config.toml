@@ -1,12 +1,31 @@
+# Filename of output file
 output_file = "seismic_data.csv"
+# Number of logs stored in RAM before saving into output file
 buffer_size = 1000
 
-[spi]
-spi_bus = 0
-spi_device = 0
-
 [ads]
+# Documentation for this settings can be found in "pipyadc" library docs:
+# https://github.com/ul-gh/PiPyADC/blob/pigpio/examples/waveshare_board/waveshare_config.py
+v_ref = 2.5
 gain = 1
 drate = 2000
-v_ref = 2.5
-channels = [0, 1, 2, 3, 4, 5, 6, 7]
+active_channels = [0]
+
+[ads.spi]
+spi_bus = 0
+spi_channel = 0
+spi_frequency = 976563
+
+[ads.pins]
+cs_pin = 27
+drdy_pin = 17
+reset_pin = 18
+pdwn_pin = 27
+chip_select_gpios_initialize = [22, 23]
+
+[ads.chip]
+drdy_timeout = 2.0
+drdy_delay = 0.000001
+clkin_frequency = 7680000
+chip_hard_reset_on_start = false
+chip_id = 3
