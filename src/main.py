@@ -2,10 +2,12 @@ import config
 import os 
 import time
 import datetime
+import threading
 
 import ads_reader
 import data
 import logging_utils
+import gps
 
 def create_saver(report_type: str) -> data.BaseSaver:
     if report_type == "csv":
@@ -30,6 +32,16 @@ if __name__ == "__main__":
     if not os.path.exists(cfg.output_folder):
         os.makedirs(cfg.output_folder)
 
+    gps_i = gps.GPSReader(cfg.gps)
+    gps_thread = threading.Thread(
+        target=gps_i.gps_loop, 
+        name="GPSDaemon-1",
+        daemon=True,
+    )
+    gps_thread.start()
+
+    gps_i.wait_for_gps()
+
     saver = create_saver(cfg.report_type)
     dq = data.DataQueue(saver, cfg)
 
@@ -40,6 +52,10 @@ if __name__ == "__main__":
     index_table.add_column("file_path", str)
     index_table.add_column("drate", int)
     index_table.add_column("sample_count", int)
+    index_table.add_column("latitude", float)
+    index_table.add_column("longitude", float)
+    index_table.add_column("altitude", float)
+    index_table.add_column("gps_satellites", int)
 
     data_batch_template = data.DataTable()
 
@@ -63,6 +79,7 @@ if __name__ == "__main__":
 
                 dq.put(current_path, data_batch)
 
+                current_gps = gps_i.get_last_fix()
                 meta_row = index_table.get_copy_with_columns()
                 meta_row.add_row({
                     "start_time": start_iso,
@@ -70,7 +87,11 @@ if __name__ == "__main__":
                         .isoformat(),
                     "file_path": current_path,
                     "drate": cfg.ads.drate,
-                    "sample_count": len(data_batch)
+                    "sample_count": len(data_batch),
+                    "latitude": current_gps["lat"],
+                    "longitude": current_gps["lon"],
+                    "altitude": current_gps["alt"],
+                    "gps_satellites": current_gps["num_sats"]
                 })
 
                 dq.put(index_table_path, meta_row)

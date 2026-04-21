@@ -1,9 +1,14 @@
 annotated-types==0.7.0
+future==1.0.0
+iso8601==2.1.0
 pigpio==1.78
 pipyadc==2.1
 pydantic==2.13.2
 pydantic-settings==2.13.1
 pydantic_core==2.46.2
+pynmea2==1.19.0
 python-dotenv==1.2.2
+PyYAML==6.0.3
+serial==0.0.97
 typing-inspection==0.4.2
 typing_extensions==4.15.0

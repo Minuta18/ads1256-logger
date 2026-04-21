@@ -27,7 +27,11 @@ class DataQueue:
         # than enough to handle any backlog without consuming too much memory.
         self._queue = queue.Queue(maxsize=20)
 
-        self._worker_thread = threading.Thread(target=self._worker, daemon=True)
+        self._worker_thread = threading.Thread(
+            target=self._worker, 
+            daemon=True,
+            name="DataQueueWorker-1"
+        )
         self._stop_event = threading.Event()
 
         self._worker_thread.start()

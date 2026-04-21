@@ -48,8 +48,16 @@ class ADSConfig(pydantic.BaseModel):
             raise ValueError(f"SPS (drate) must be one of {VALID_SPS}")
         return v
 
+class GPSConfig(pydantic.BaseModel):
+    gps_port: str = '/dev/ttyS0'
+    gps_baudrate: int = 9600
+
+    timeout: float = 120.0
+    retry_interval: float = 5.0
+
 class Config(pydantic_settings.BaseSettings):
     ads: ADSConfig = ADSConfig()
+    gps: GPSConfig = GPSConfig()
 
     buffer_size: int = 20000
     output_folder: str = "./data"

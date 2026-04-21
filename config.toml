@@ -12,6 +12,18 @@ report_type = "csv"
 # Logging level. Possible values: "INFO", "WARNING", "ERROR"
 log_level = "INFO"
 
+[gps]
+# Settings for GPS reader.
+
+# Interface for GPS module
+gps_port = "/dev/ttyS0"
+# GPS baudrate
+gps_baudrate = 9600
+# Max time to wait for creation of stable GPS fix (in seconds)
+timeout = 120.0
+# Time to wait before retrying to get GPS fix after failure (in seconds)        
+retry_interval = 5.0
+
 [ads]
 # Documentation for this settings can be found in "pipyadc" library docs:
 # https://github.com/ul-gh/PiPyADC/blob/pigpio/examples/waveshare_board/waveshare_config.py
