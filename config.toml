@@ -1,7 +1,7 @@
 # Filename of output file
 output_file = "seismic_data.csv"
 # Number of logs stored in RAM before saving into output file
-buffer_size = 1000
+buffer_size = 20000
 
 [ads]
 # Documentation for this settings can be found in "pipyadc" library docs:

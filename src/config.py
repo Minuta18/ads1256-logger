@@ -52,7 +52,7 @@ class Config(pydantic_settings.BaseSettings):
     ads: ADSConfig = ADSConfig()
 
     output_file: str = "seismic_data.csv"
-    buffer_size: int = 1000
+    buffer_size: int = 20000
 
     model_config = pydantic_settings.SettingsConfigDict(
         env_file_encoding="utf-8",
