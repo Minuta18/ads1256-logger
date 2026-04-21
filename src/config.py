@@ -55,6 +55,7 @@ class Config(pydantic_settings.BaseSettings):
     output_folder: str = "./data"
     report_filename_format: str = "report_{timestamp}.csv"
     report_type: str = "csv"
+    log_level: str = "INFO"
 
     model_config = pydantic_settings.SettingsConfigDict(
         env_file_encoding="utf-8",

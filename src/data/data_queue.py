@@ -5,6 +5,7 @@ import threading
 from . import data_saver
 from . import data_table
 import config
+import logging_utils
 
 @dataclasses.dataclass
 class SaveRequest:
@@ -20,6 +21,7 @@ class DataQueue:
     def __init__(self, saver: data_saver.BaseSaver, config_: config.Config):
         self._saver = saver
         self._config = config_
+        self._logger = logging_utils.get_logger("SeismoLogger.DataQueue")
 
         # 20 would be enough to hold 20x the buffer size, which should be more 
         # than enough to handle any backlog without consuming too much memory.
@@ -31,10 +33,22 @@ class DataQueue:
         self._worker_thread.start()
 
     def put(self, path: str, table: data_table.DataTable):
-        if not self._stop_event.is_set():
+        if self._stop_event.is_set():
+            return
+        
+        try:
             self._queue.put(SaveRequest(path=path, table=table))
+        except queue.Full:
+            self._logger.warning(
+                f"DataQueue is full! Batch for {path} was dropped."
+            )
 
     def _worker(self):
+        worker_logger = logging_utils.get_logger(
+            "SeismoLogger.DataQueue.Worker-1"
+        )
+
+        worker_logger.info("DataQueue worker thread started.")
         while not self._stop_event.is_set() or not self._queue.empty():
             try:
                 task = self._queue.get(timeout=0.1)
@@ -43,7 +57,9 @@ class DataQueue:
             except queue.Empty:
                 continue
             except Exception as e:
-                ...
+                worker_logger.error(
+                    f"Unexpected error: {e}", exc_info=True
+                )
 
     def join(self):
         self._queue.join()
@@ -51,3 +67,6 @@ class DataQueue:
     def stop(self):
         self._stop_event.set()
         self._worker_thread.join()
+
+    def __len__(self):
+        return self._queue.qsize()

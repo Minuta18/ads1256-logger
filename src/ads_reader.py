@@ -2,6 +2,7 @@ import pipyadc
 import types
 
 import config
+import logging_utils
 
 class ADSReader:
     '''Class to manage the ADS1256 reader using pipyadc.'''
@@ -12,6 +13,8 @@ class ADSReader:
         self._ch_seq = self.adapter_config.ch_sequence
         self.ads = None
 
+        self.logger = logging_utils.get_logger("SeismoLogger.ADSReader")
+
         # pipyadc expects a module-like object for configuration, so we create 
         # one dynamically from the adapter config. 
         self.lib_config = types.ModuleType('ads_config_runtime')
@@ -19,8 +22,14 @@ class ADSReader:
             setattr(self.lib_config, key, value)
 
     def __enter__(self):
-        self.ads = pipyadc.ADS1256(self.lib_config)
-        self.ads.cal_self()
+        self.logger.info(f"Initializing ADS1256")
+        try:
+            self.ads = pipyadc.ADS1256(self.lib_config)
+            self.ads.cal_self()
+            self.logger.info(f"ADS1256 initialized successfully.")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize ADS1256: {e}")
+            raise e
 
         return self
     

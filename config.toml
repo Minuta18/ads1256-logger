@@ -9,6 +9,8 @@ report_filename_format = "report_{timestamp}_{number}.csv"
 # Type of reports. Supported types:
 # - csv
 report_type = "csv"
+# Logging level. Possible values: "INFO", "WARNING", "ERROR"
+log_level = "INFO"
 
 [ads]
 # Documentation for this settings can be found in "pipyadc" library docs:

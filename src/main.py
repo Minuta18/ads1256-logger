@@ -1,10 +1,11 @@
 import config
 import os 
+import time
+import datetime
 
 import ads_reader
 import data
-import time
-import datetime
+import logging_utils
 
 def create_saver(report_type: str) -> data.BaseSaver:
     if report_type == "csv":
@@ -23,7 +24,9 @@ def generate_report_filename(cfg: config.Config, current_sample: int) -> str:
 
 if __name__ == "__main__":
     cfg = config.Config()
-    
+    logging_utils.setup_logging(cfg)
+    logger = logging_utils.get_logger("SeismoLogger.main")
+
     if not os.path.exists(cfg.output_folder):
         os.makedirs(cfg.output_folder)
 
@@ -39,6 +42,8 @@ if __name__ == "__main__":
     index_table.add_column("sample_count", int)
 
     data_batch_template = data.DataTable()
+
+    logger.info(f"Starting data collection. Target SPS: { cfg.ads.drate }")
 
     try:
         current_sample = 1
@@ -70,11 +75,14 @@ if __name__ == "__main__":
 
                 dq.put(index_table_path, meta_row)
 
+                if current_sample % 10 == 0:
+                    logger.info(f"Collected {current_sample} samples. Queue size: { len(dq) }")
+
                 current_sample += 1
     except KeyboardInterrupt:
-        print("Stopping data collection...")
+        logger.info("Stopping data collection...")
     finally:
-        print("Waiting for pending save operations to complete...")
+        logger.info("Waiting for pending save operations to complete...")
         dq.stop()
-        print("Done.")
+        logger.info("Done.")
 
