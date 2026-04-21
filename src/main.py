@@ -1,6 +1,80 @@
 import config
+import os 
+
+import ads_reader
+import data
+import time
+import datetime
+
+def create_saver(report_type: str) -> data.BaseSaver:
+    if report_type == "csv":
+        return data.CSVSaver()
+    else:
+        raise ValueError(f"Unsupported report type: {report_type}")
+
+def generate_report_filename(cfg: config.Config, current_sample: int) -> str:
+    timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    
+    filename = cfg.report_filename_format.format(
+        timestamp=timestamp,
+        number=current_sample
+    )
+    return os.path.join(cfg.output_folder, filename)
 
 if __name__ == "__main__":
     cfg = config.Config()
-    print(cfg.model_dump())
+    
+    if not os.path.exists(cfg.output_folder):
+        os.makedirs(cfg.output_folder)
+
+    saver = create_saver(cfg.report_type)
+    dq = data.DataQueue(saver, cfg)
+
+    index_table_path = os.path.join(cfg.output_folder, "reports_index.csv")
+    index_table = data.DataTable()
+    index_table.add_column("start_time", str)
+    index_table.add_column("end_time", str)
+    index_table.add_column("file_path", str)
+    index_table.add_column("drate", int)
+    index_table.add_column("sample_count", int)
+
+    data_batch_template = data.DataTable()
+
+    try:
+        current_sample = 1
+        with ads_reader.ADSReader(cfg) as reader:
+            while True:
+                current_path = generate_report_filename(cfg, current_sample)
+                start_iso = datetime.datetime.now(
+                    datetime.timezone.utc).isoformat()
+
+                data_batch = data_batch_template.get_copy_with_columns()
+
+                start_perf = time.perf_counter()
+                for _ in range(cfg.buffer_size):
+                    sample = reader.read_channels_volts()
+                    offset = time.perf_counter() - start_perf
+                    data_batch.add_row_values([offset, sample[0]])
+
+                dq.put(current_path, data_batch)
+
+                meta_row = index_table.get_copy_with_columns()
+                meta_row.add_row({
+                    "start_time": start_iso,
+                    "end_time": datetime.datetime.now(datetime.timezone.utc)
+                        .isoformat(),
+                    "file_path": current_path,
+                    "drate": cfg.ads.drate,
+                    "sample_count": len(data_batch)
+                })
+
+                dq.put(index_table_path, meta_row)
+
+                current_sample += 1
+    except KeyboardInterrupt:
+        print("Stopping data collection...")
+    finally:
+        print("Waiting for pending save operations to complete...")
+        dq.stop()
+        print("Done.")
 

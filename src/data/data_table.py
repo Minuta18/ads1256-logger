@@ -11,6 +11,12 @@ class DataTable:
         self._rows: typing.List[typing.List[typing.Any]] = []
         self._name_to_idx: typing.Dict[str, int] = {}
 
+    def get_copy_with_columns(self) -> 'DataTable':
+        new_table = DataTable()
+        for name, typ in zip(self.column_names, self.column_types):
+            new_table.add_column(name, typ)
+        return new_table
+
     def add_column(self, column_name: str, column_type: typing.Type) -> 'DataTable':
         if column_name in self._name_to_idx:
             raise ValueError(f"Column name '{column_name}' already exists.")

@@ -1,5 +1,6 @@
 import csv
 import abc
+import os
 
 from . import data_table
 
@@ -10,7 +11,11 @@ class BaseSaver(abc.ABC):
 
 class CSVSaver(BaseSaver):
     def save(self, path: str, table: data_table.DataTable):
-        with open(path, 'w', newline='') as f:
+        mode = 'w'
+        if os.path.exists(path):
+            mode = 'a'
+
+        with open(path, mode, newline='') as f:
             writer = csv.writer(f)
             writer.writerow(table.column_names)
             writer.writerows(table._rows)

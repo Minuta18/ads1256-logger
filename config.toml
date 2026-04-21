@@ -1,7 +1,14 @@
-# Filename of output file
-output_file = "seismic_data.csv"
 # Number of logs stored in RAM before saving into output file
 buffer_size = 20000
+# Folder containing reports
+output_folder = "./data"
+# Format of reports' filenames. Supported features:
+# - timestamp  - time of report creation
+# - number     - report's number
+report_filename_format = "report_{timestamp}_{number}.csv"
+# Type of reports. Supported types:
+# - csv
+report_type = "csv"
 
 [ads]
 # Documentation for this settings can be found in "pipyadc" library docs:
