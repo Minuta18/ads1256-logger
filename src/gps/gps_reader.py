@@ -7,12 +7,14 @@ import serial
 
 import logging_utils
 import config
+import status_collector
 
 class GPSReader:
     '''Class to manage GPS reading using pynmea2.'''
     
-    def __init__(self, cfg: config.GPSConfig):
+    def __init__(self, cfg: config.GPSConfig, status_collector: status_collector.StatusCollector = None):
         self.cfg = cfg
+        self.status_collector = status_collector
 
         self.gps_port = cfg.gps_port
         self.gps_baudrate = cfg.gps_baudrate
@@ -44,6 +46,17 @@ class GPSReader:
                     self.last_fix["alt"] = msg.altitude
                     self.last_fix["num_sats"] = int(msg.num_sats)
                     self.last_fix["status"] = int(msg.gps_qual)
+
+                    to_update = {
+                        "gps_lat": self.last_fix["lat"],
+                        "gps_lon": self.last_fix["lon"],
+                        "gps_alt": self.last_fix["alt"],
+                        "gps_sats": self.last_fix["num_sats"]
+                    }
+
+                    for key, value in to_update.items():
+                        if self.status_collector:
+                            self.status_collector.update_status(key, value)
 
                     if self.last_fix["num_sats"] >= 4 and \
                         self.last_fix["status"] > 0:

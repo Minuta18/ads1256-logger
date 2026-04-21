@@ -8,6 +8,7 @@ import ads_reader
 import data
 import logging_utils
 import gps
+import status_collector
 
 def create_saver(report_type: str) -> data.BaseSaver:
     if report_type == "csv":
@@ -32,7 +33,10 @@ if __name__ == "__main__":
     if not os.path.exists(cfg.output_folder):
         os.makedirs(cfg.output_folder)
 
-    gps_i = gps.GPSReader(cfg.gps)
+    status_collector = status_collector.StatusCollector(cfg)
+    status_collector.start()
+
+    gps_i = gps.GPSReader(cfg.gps, status_collector)
     gps_thread = threading.Thread(
         target=gps_i.gps_loop, 
         name="GPSDaemon-1",
@@ -98,6 +102,14 @@ if __name__ == "__main__":
 
                 if current_sample % 10 == 0:
                     logger.info(f"Collected {current_sample} samples. Queue size: { len(dq) }")
+
+                status_collector.update_status("queue_load", len(dq) / 20.0)
+                status_collector.update_status(
+                    "total_batches_saved", current_sample)
+                status_collector.update_status(
+                    "last_batch_time", 
+                    datetime.datetime.now(datetime.timezone.utc).isoformat()
+                )
 
                 current_sample += 1
     except KeyboardInterrupt:

@@ -21,8 +21,29 @@ gps_port = "/dev/ttyS0"
 gps_baudrate = 9600
 # Max time to wait for creation of stable GPS fix (in seconds)
 timeout = 120.0
-# Time to wait before retrying to get GPS fix after failure (in seconds)        
+# Time to wait before retrying to get GPS fix after failure (in seconds)
 retry_interval = 5.0
+
+[web_server]
+# Settings for built-in web server.
+
+# Host to bind the web server to. Use "0.0.0.0" to bind to all interfaces.
+host = "0.0.0.0"
+# Port to listen on. Defaults to 8000, which is a common http port.
+port = 8000
+# Whether to set a password for accessing the web server. If true, the password
+# specified in "password" field will be required to access the web server.
+password_set = false
+# Password for accessing the web server. Ignored if "password_set" is false.
+password = "admin"
+# Interval (in seconds) at which main thread will update data for web server. 
+# This does not affect the actual data reading from the ADS1256 chip, which is 
+# done in a separate thread and is not limited by this interval. Setting this 
+# value too low may cause high CPU usage, while setting it too high may cause 
+# the web server to display outdated data. A reasonable value is around 20 
+# seconds, but you can adjust it based on your needs and performance 
+# requirements.
+data_update_interval = 20.0
 
 [ads]
 # Documentation for this settings can be found in "pipyadc" library docs:

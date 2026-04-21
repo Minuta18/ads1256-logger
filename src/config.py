@@ -55,9 +55,17 @@ class GPSConfig(pydantic.BaseModel):
     timeout: float = 120.0
     retry_interval: float = 5.0
 
+class WebServerConfig(pydantic.BaseModel):
+    host: str = '0.0.0.0'
+    port: int = 8000
+    password_set: bool = False
+    password: str = "admin"
+    data_update_interval: float = 20.0
+
 class Config(pydantic_settings.BaseSettings):
     ads: ADSConfig = ADSConfig()
     gps: GPSConfig = GPSConfig()
+    web_server: WebServerConfig = WebServerConfig()
 
     buffer_size: int = 20000
     output_folder: str = "./data"
