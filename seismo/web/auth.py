@@ -1,7 +1,7 @@
 import bottle
 import json
 
-from shared_modules import config
+from seismo import config
 
 class AuthManager:
     def __init__(self, cfg: config.Config):

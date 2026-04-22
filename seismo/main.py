@@ -2,12 +2,14 @@ import os
 import time
 import datetime
 import threading
+import multiprocessing
 
-from shared_modules import config
-import shared_modules.logging_utils as logging_utils
+from seismo import config
+import seismo.logging_utils as logging_utils
 from . import ads_reader
 from . import data
 from . import gps
+from . import web
 
 def create_saver(report_type: str) -> data.BaseSaver:
     if report_type == "csv":
@@ -24,7 +26,7 @@ def generate_report_filename(cfg: config.Config, current_sample: int) -> str:
     )
     return os.path.join(cfg.output_folder, filename)
 
-def main():
+if __name__ == "__main__":
     cfg = config.Config()
     logging_utils.setup_logging(cfg)
     logger = logging_utils.get_logger("SeismoLogger.main")
@@ -47,6 +49,14 @@ def main():
 
     saver = create_saver(cfg.report_type)
     dq = data.DataQueue(saver, cfg)
+
+    if cfg.web_server.start_server:
+        web_process = multiprocessing.Process(
+            target=web.run_server,
+            name="WebServerProcess",
+            daemon=True,
+        )
+        web_process.start()
 
     index_table_path = os.path.join(cfg.output_folder, "reports_index.csv")
     index_table = data.DataTable()

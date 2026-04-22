@@ -1,11 +1,9 @@
 import bottle
 import json
-import time
-import typing
-import functools
 
-from shared_modules import config
-from shared_modules import logging_utils
+from seismo import config
+from seismo import logging_utils
+from seismo import status_collector
 from . import views
 
 cfg = config.Config()
@@ -24,7 +22,8 @@ def error404(error):
         "error": "page not found",
     })
 
-def main():
+def run_server(collector: status_collector.StatusCollector):
+    views.data_receiver_instance.status_collector = collector
     app.run(
         host=cfg.web_server.host,
         port=cfg.web_server.port,

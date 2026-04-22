@@ -5,8 +5,8 @@ import subprocess
 import time
 import serial
 
-import shared_modules.logging_utils as logging_utils
-from shared_modules import config
+import seismo.logging_utils as logging_utils
+from seismo import config
 from seismo import status_collector
 
 class GPSReader:

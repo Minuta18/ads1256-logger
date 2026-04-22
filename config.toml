@@ -27,6 +27,11 @@ retry_interval = 5.0
 [web_server]
 # Settings for built-in web server.
 
+# Whether to start the web server. Use in case of critical load. 
+# NOTE: Web server runs in a separate process, so it should not affect the main
+# data reading process. However, if you are experiencing performance issues,
+# you can disable the web server.
+start_server = true
 # Host to bind the web server to. Use "0.0.0.0" to bind to all interfaces.
 host = "0.0.0.0"
 # Port to listen on. Defaults to 8000, which is a common http port.

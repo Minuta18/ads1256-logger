@@ -61,6 +61,7 @@ class WebServerConfig(pydantic.BaseModel):
     password_set: bool = False
     password: str = "admin"
     data_update_interval: float = 20.0
+    start_server: bool = True
 
 class Config(pydantic_settings.BaseSettings):
     ads: ADSConfig = ADSConfig()

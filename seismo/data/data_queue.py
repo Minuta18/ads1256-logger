@@ -4,8 +4,8 @@ import threading
 
 from . import data_saver
 from . import data_table
-from shared_modules import config
-import shared_modules.logging_utils as logging_utils
+from seismo import config
+import seismo.logging_utils as logging_utils
 
 @dataclasses.dataclass
 class SaveRequest:

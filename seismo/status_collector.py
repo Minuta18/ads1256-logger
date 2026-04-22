@@ -2,8 +2,8 @@ import time
 import threading
 import psutil
 
-import shared_modules.logging_utils as logging_utils
-from shared_modules import config
+import seismo.logging_utils as logging_utils
+from seismo import config
 
 class StatusCollector:
     def __init__(self, cfg: config.Config):

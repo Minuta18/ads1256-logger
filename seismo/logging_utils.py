@@ -2,7 +2,7 @@ import logging
 import sys
 import os
 
-from shared_modules import config
+from seismo import config
 
 def setup_logging(cfg: config.Config):
     log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
