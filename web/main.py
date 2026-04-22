@@ -7,6 +7,8 @@ import config
 
 cfg = config.Config()
 
+app = bottle.Bottle()
+
 def get_main_thread_data() -> dict:
     return {
         "uptime": 0.0,
@@ -31,37 +33,63 @@ def get_fields(
 ) -> dict:
     return {k: source_dict.get(k) for k in fields}
 
+def auth(password: str|None):
+    if not cfg.web_server.password_set:
+        return 
+    
+    if password is None:
+        bottle.abort(400, json.dumps({
+            "error": "password is required to access this page",
+        }))
+    
+    if password != cfg.web_serber.password:
+        bottle.abort(401, json.dumps({
+            "error": "not authorised", 
+        }))
+
 initial_time = time.time()
 
-@bottle.route("/api/server_status")
+@app.route("/api/server_status")
 def server_status():
+    bottle.response.set_header("Content-Type", "application/json")
+
     return json.dumps({
         "status": "ok",
         "uptime": time.time() - initial_time
     })
 
-@bottle.route("/api/seismo_status")
+@app.route("/api/seismo_status")
 def seismo_status():
     data = get_main_thread_data()
 
     status = "ok" if data.get("is_running", False) else "stopped"
+
+    bottle.response.set_header("Content-Type", "application/json")
 
     return json.dumps({
         "status": status,
         "uptime": data.get("uptime")
     }) 
 
-@bottle.route("/api/raspberry_status")
+@app.route("/api/raspberry_status")
 def raspberry_status():
+    auth(bottle.request.query.password)
+
     data = get_main_thread_data()
+
+    bottle.response.set_header("Content-Type", "application/json")
 
     return json.dumps(get_fields(data, [
         "cpu_usage", "memory_usage", "disk_usage"
     ]))
 
-@bottle.route("/api/gps_data")
+@app.route("/api/gps_data")
 def gps_data():
+    auth(bottle.request.query.password)
+
     data = get_main_thread_data()
+
+    bottle.response.set_header("Content-Type", "application/json")
 
     return json.dumps({
         "lat": data.get("gps_lat"),
@@ -70,18 +98,26 @@ def gps_data():
         "sats": data.get("gps_sats"), 
     })
 
-@bottle.route("/api/seismo_stats")
+@app.route("/api/seismo_stats")
 def seismo_stats():
+    auth(bottle.request.query.password)
+
     data = get_main_thread_data()
+
+    bottle.response.set_header("Content-Type", "application/json")
 
     return json.dumps(get_fields(data, [
         "queue_load", "total_batches", "last_batch_time"
     ]))
 
-@bottle.route("/api/get_all_stats")
+@app.route("/api/get_all_stats")
 def get_all_stats():
+    auth(bottle.request.query.password)
+
     data = get_main_thread_data()
     
+    bottle.response.set_header("Content-Type", "application/json")
+
     return json.dumps({
         "status": "ok",
         "raspberry_status": get_fields(data, [
@@ -98,8 +134,16 @@ def get_all_stats():
         ])
     })
 
+@bottle.error(404)
+def error404(error):
+    bottle.response.set_header("Content-Type", "application/json")
+    
+    return json.dumps({
+        "error": "page not found",
+    })
+
 if __name__ == "__main__":
-    bottle.run(
+    app.run(
         host=cfg.web_server.host,
         port=cfg.web_server.port
     )
