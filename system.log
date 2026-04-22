@@ -1,0 +1,6 @@
+2026-04-22 19:32:36,264 [INFO] SeismoWeb: Server started! Listening on /
+2026-04-22 19:32:36,264 [INFO] SeismoWeb: Hit Ctrl-C to quit.
+2026-04-22 19:32:40,951 [INFO] SeismoWeb: Server stopped.
+2026-04-22 19:40:06,160 [INFO] SeismoWeb: Server started! Listening on http://0.0.0.0:8000
+2026-04-22 19:40:06,160 [INFO] SeismoWeb: Hit Ctrl-C to quit.
+2026-04-22 19:40:40,530 [INFO] SeismoWeb: Server stopped.

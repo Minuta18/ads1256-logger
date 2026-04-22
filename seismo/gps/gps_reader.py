@@ -7,7 +7,7 @@ import serial
 
 import shared_modules.logging_utils as logging_utils
 from shared_modules import config
-import status_collector
+from seismo import status_collector
 
 class GPSReader:
     '''Class to manage GPS reading using pynmea2.'''

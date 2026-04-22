@@ -4,11 +4,10 @@ import datetime
 import threading
 
 from shared_modules import config
-import ads_reader
-import data
 import shared_modules.logging_utils as logging_utils
-import gps
-import status_collector
+from . import ads_reader
+from . import data
+from . import gps
 
 def create_saver(report_type: str) -> data.BaseSaver:
     if report_type == "csv":

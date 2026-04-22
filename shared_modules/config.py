@@ -84,7 +84,9 @@ class Config(pydantic_settings.BaseSettings):
         ),)
 
 GAIN_MAP = { i: getattr(ads_defs, f"GAIN_{i}") for i in VALID_GAINS }
-SPS_MAP = { str(i): getattr(ads_defs, f"DRATE_{i}") for i in VALID_SPS }
+SPS_MAP = { 
+    str(i): getattr(ads_defs, f"DRATE_{i}") for i in VALID_SPS if i != 2.5 
+}
 SPS_MAP[str(2.5)] = ads_defs.DRATE_2_5
 
 class LibConfigAdapter:
