@@ -1,12 +1,12 @@
-import config
 import os 
 import time
 import datetime
 import threading
 
+from shared_modules import config
 import ads_reader
 import data
-import logging_utils
+import shared_modules.logging_utils as logging_utils
 import gps
 import status_collector
 
@@ -25,7 +25,7 @@ def generate_report_filename(cfg: config.Config, current_sample: int) -> str:
     )
     return os.path.join(cfg.output_folder, filename)
 
-if __name__ == "__main__":
+def main():
     cfg = config.Config()
     logging_utils.setup_logging(cfg)
     logger = logging_utils.get_logger("SeismoLogger.main")

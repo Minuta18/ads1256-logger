@@ -2,10 +2,10 @@ import logging
 import sys
 import os
 
-import config
+from shared_modules import config
 
 def setup_logging(cfg: config.Config):
-    log_format = "%(asctime)s [%(levelname)s] %(name)s:%(message)s"
+    log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
     level_dict = {
         "INFO": logging.INFO,

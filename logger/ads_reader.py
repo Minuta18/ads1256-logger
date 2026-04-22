@@ -1,8 +1,8 @@
 import pipyadc 
 import types
 
-import config
-import logging_utils
+from shared_modules import config
+import shared_modules.logging_utils as logging_utils
 
 class ADSReader:
     '''Class to manage the ADS1256 reader using pipyadc.'''

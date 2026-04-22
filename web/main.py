@@ -2,12 +2,33 @@ import bottle
 import json
 import time
 import typing
+import functools
+import datetime
 
-import config
+from shared_modules import config
+from shared_modules import logging_utils
 
 cfg = config.Config()
 
 app = bottle.Bottle()
+
+logging_utils.setup_logging(cfg)
+logger = logging_utils.get_logger('SeismoWeb')
+
+def bottle_custom_logger(fn):
+    @functools.wraps(fn)
+    def log_to_logger(*args, **kwargs):
+        actual_response = fn(*args, **kwargs)
+        logger.info(
+            f"{ bottle.request.remote_addr } -- \"{ bottle.request.method } " +
+            f"{ bottle.request.url }\" { bottle.response.status_code } " +
+            f"{ bottle.response.status_line }"
+        )
+
+        return actual_response
+    return log_to_logger
+
+app.install(bottle_custom_logger)
 
 def get_main_thread_data() -> dict:
     return {
@@ -107,7 +128,7 @@ def seismo_stats():
     bottle.response.set_header("Content-Type", "application/json")
 
     return json.dumps(get_fields(data, [
-        "queue_load", "total_batches", "last_batch_time"
+        "queue_load", "total_batches_saved", "last_batch_time"
     ]))
 
 @app.route("/api/get_all_stats")
@@ -130,11 +151,11 @@ def get_all_stats():
             "sats": data.get("gps_sats"), 
         },
         "seismo": get_fields(data, [
-            "queue_load", "total_batches", "last_batch_time"
+            "queue_load", "total_batches_saved", "last_batch_time"
         ])
     })
 
-@bottle.error(404)
+@app.error(404)
 def error404(error):
     bottle.response.set_header("Content-Type", "application/json")
     
@@ -142,8 +163,18 @@ def error404(error):
         "error": "page not found",
     })
 
-if __name__ == "__main__":
+@app.route("/", name="index")
+def index():
+    bottle.abort(404)
+
+def main():
+    logger.info(f"Server started! Listening on { app.get_url('index') }")
+    logger.info(f"Hit Ctrl-C to quit.")
+
     app.run(
         host=cfg.web_server.host,
-        port=cfg.web_server.port
+        port=cfg.web_server.port,
+        quiet=True
     )
+
+    logger.info("Server stopped.")
