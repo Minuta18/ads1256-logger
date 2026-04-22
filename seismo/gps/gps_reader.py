@@ -12,7 +12,10 @@ from seismo import status_collector
 class GPSReader:
     '''Class to manage GPS reading using pynmea2.'''
     
-    def __init__(self, cfg: config.GPSConfig, status_collector: status_collector.StatusCollector = None):
+    def __init__(self, 
+        cfg: config.GPSConfig, 
+        status_collector: status_collector.StatusCollector|None = None
+    ):
         self.cfg = cfg
         self.status_collector = status_collector
 
@@ -148,4 +151,10 @@ class GPSReader:
                     if line:
                         self._parse_line(line)
         except Exception as e:
-            self._logger.error(f"Error in GPS reading loop: {e}")
+            self._logger.error(
+                f"Error in GPS reading loop: {e}", exc_info=True
+            )
+            self._logger.info(
+                "Attempting to restart GPS reading loop in 5 seconds..."
+            )
+            time.sleep(5)

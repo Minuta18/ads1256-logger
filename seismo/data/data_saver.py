@@ -17,5 +17,6 @@ class CSVSaver(BaseSaver):
 
         with open(path, mode, newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(table.column_names)
+            if mode == 'w':
+                writer.writerow(table.column_names)
             writer.writerows(table._rows)
