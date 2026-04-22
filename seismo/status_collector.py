@@ -1,9 +1,10 @@
-import time 
 import threading
+import time
+
 import psutil
 
-import seismo.logging_utils as logging_utils
-from seismo import config
+from seismo import config, logging_utils
+
 
 class StatusCollector:
     def __init__(self, cfg: config.Config):
@@ -26,9 +27,9 @@ class StatusCollector:
             "gps_sats": 0.0,
 
             "queue_load": 0.0,
-            
+
             "total_batches_saved": 0,
-            "last_batch_time": "Never",            
+            "last_batch_time": "Never",
         }
 
         self._lock = threading.Lock()
@@ -37,7 +38,7 @@ class StatusCollector:
 
     def start(self):
         self._thread = threading.Thread(
-            target=self._run, daemon=True, name="StatusCollectorThread"
+            target=self._run, daemon=True, name="StatusCollectorThread",
         )
         self._thread.start()
         self._logger.info("Worker started.")
@@ -53,7 +54,7 @@ class StatusCollector:
             self._data["is_running"] = True
             self._data["cpu_usage"] = psutil.cpu_percent()
             self._data["memory_usage"] = psutil.virtual_memory().percent
-            self._data["disk_usage"] = psutil.disk_usage('/').percent
+            self._data["disk_usage"] = psutil.disk_usage("/").percent
             self._data["last_update"] = time.time()
 
     def _run(self):
@@ -63,14 +64,13 @@ class StatusCollector:
             except Exception as e:
                 self._logger.error(f"Error occurred while updating status: {e}")
             time.sleep(self._update_interval)
-    
+
     def get_all(self):
         with self._lock:
             return self._data.copy()
-        
+
     def stop(self):
         self._stop_event.set()
         if self._thread:
             self._thread.join()
         self._logger.info("Worker stopped.")
-    

@@ -1,8 +1,9 @@
-import csv
 import abc
+import csv
 import os
 
 from . import data_table
+
 
 class BaseSaver(abc.ABC):
     @abc.abstractmethod
@@ -11,12 +12,12 @@ class BaseSaver(abc.ABC):
 
 class CSVSaver(BaseSaver):
     def save(self, path: str, table: data_table.DataTable):
-        mode = 'w'
+        mode = "w"
         if os.path.exists(path):
-            mode = 'a'
+            mode = "a"
 
-        with open(path, mode, newline='') as f:
+        with open(path, mode, newline="") as f:
             writer = csv.writer(f)
-            if mode == 'w':
+            if mode == "w":
                 writer.writerow(table.column_names)
             writer.writerows(table._rows)

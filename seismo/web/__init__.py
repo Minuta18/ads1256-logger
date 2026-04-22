@@ -1,9 +1,9 @@
-import bottle
 import json
 
-from seismo import config
-from seismo import logging_utils
-from seismo import status_collector
+import bottle
+
+from seismo import config, logging_utils, status_collector
+
 from . import views
 
 cfg = config.Config()
@@ -12,12 +12,12 @@ app = bottle.Bottle()
 app.mount("/api/", views.router)
 
 logging_utils.setup_logging(cfg)
-logger = logging_utils.get_logger('SeismoWeb')
+logger = logging_utils.get_logger("SeismoWeb")
 
 @app.error(404)
 def error404(error):
     bottle.response.set_header("Content-Type", "application/json")
-    
+
     return json.dumps({
         "error": "page not found",
     })

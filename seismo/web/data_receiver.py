@@ -1,5 +1,6 @@
 from seismo import status_collector
 
+
 class DataReceiver:
     def __init__(self):
         self.status_collector : status_collector.StatusCollector|None = None

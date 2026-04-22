@@ -1,8 +1,8 @@
 import logging
 import sys
-import os
 
 from seismo import config
+
 
 def setup_logging(cfg: config.Config):
     log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
@@ -10,7 +10,7 @@ def setup_logging(cfg: config.Config):
     level_dict = {
         "INFO": logging.INFO,
         "WARNING": logging.WARNING,
-        "ERROR": logging.ERROR
+        "ERROR": logging.ERROR,
     }
 
     logging.basicConfig(
@@ -18,7 +18,7 @@ def setup_logging(cfg: config.Config):
         format=log_format,
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler("system.log")
+            logging.FileHandler("system.log"),
         ],
     )
 
