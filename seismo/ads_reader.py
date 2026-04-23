@@ -40,7 +40,7 @@ class ADSReader:
             self.ads.cal_self()
             self.logger.info("ADS1256 initialized successfully.")
         except Exception as e:
-            self.logger.exception("Failed to initialize ADS1256: {}" % e)
+            self.logger.error("Failed to initialize ADS1256", exc_info=e)
             raise
 
         return self
@@ -58,14 +58,16 @@ class ADSReader:
     def read_channels(self) -> list[int]:
         """Read the active channels as raw 24-bit values."""
         if self.ads is None:
-            raise ValueError("ADS reader is not initialized.")
+            msg = "ADS reader is not initialized."
+            raise ValueError(msg)
 
         return self.ads.read_continue(self.lib_config.ch_sequence)
 
     def read_channels_volts(self) -> list[float]:
         """Read the active channels as voltage values."""
         if self.ads is None:
-            raise ValueError("ADS reader is not initialized.")
+            msg = "ADS reader is not initialized."
+            raise ValueError(msg)
 
         raw_data = self.read_channels()
         return [val * self.ads.v_per_digit for val in raw_data]

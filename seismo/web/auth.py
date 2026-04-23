@@ -14,10 +14,10 @@ class AuthManager:
     Uses Bearer token authentication and tracks failed attempts per IP address.
     """
 
-    def __init__(self, cfg: config.Config):
+    def __init__(self, cfg: config.Config) -> None:
         self.cfg = cfg
 
-    def get_user_password(self) -> str|None:
+    def get_user_password(self) -> str | None:
         """Extract password from Authorization header. Supports Bearer
         token format.
         """
@@ -42,7 +42,7 @@ class AuthManager:
         """
         return self.cfg.web_server.password_set
 
-    def raise_if_not_authenticated(self):
+    def raise_if_not_authenticated(self) -> None:
         """Raise bottle.HTTPError 401 if not authenticated.
         """
         if not self.requires_password():

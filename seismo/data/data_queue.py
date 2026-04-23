@@ -1,3 +1,9 @@
+"""Asynchronous data saving queue.
+
+Provides a thread-safe queue for saving data tables to disk without blocking
+the main data collection loop.
+"""
+
 import dataclasses
 import queue
 import threading
@@ -9,6 +15,8 @@ from . import data_saver, data_table
 
 @dataclasses.dataclass
 class SaveRequest:
+    """Request to save a data table to a file."""
+
     path: str
     table: data_table.DataTable
 
@@ -17,7 +25,11 @@ class DataQueue:
     data collection loop is not blocked by file I/O.
     """
 
-    def __init__(self, saver: data_saver.BaseSaver, config_: config.Config):
+    def __init__(
+        self,
+        saver: data_saver.BaseSaver,
+        config_: config.Config,
+    ) -> None:
         self._saver = saver
         self._config = config_
         self._logger = logging_utils.get_logger("SeismoLogger.DataQueue")
@@ -35,7 +47,7 @@ class DataQueue:
 
         self._worker_thread.start()
 
-    def put(self, path: str, table: data_table.DataTable):
+    def put(self, path: str, table: data_table.DataTable) -> None:
         if self._stop_event.is_set():
             return
 
@@ -46,7 +58,7 @@ class DataQueue:
                 f"DataQueue is full! Batch for {path} was dropped.",
             )
 
-    def _worker(self):
+    def _worker(self) -> None:
         worker_logger = logging_utils.get_logger(
             "SeismoLogger.DataQueue.Worker-1",
         )
@@ -64,12 +76,12 @@ class DataQueue:
                     f"Unexpected error: {e}", exc_info=True,
                 )
 
-    def join(self):
+    def join(self) -> None:
         self._queue.join()
 
-    def stop(self):
+    def stop(self) -> None:
         self._stop_event.set()
         self._worker_thread.join()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self._queue.qsize()

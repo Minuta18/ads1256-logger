@@ -7,11 +7,19 @@ from . import data_table
 
 class BaseSaver(abc.ABC):
     @abc.abstractmethod
-    def save(self, path: str, table: data_table.DataTable):
+    def save(
+        self,
+        path: str,
+        table: data_table.DataTable,
+    ) -> None:
         pass
 
 class CSVSaver(BaseSaver):
-    def save(self, path: str, table: data_table.DataTable):
+    def save(
+        self,
+        path: str,
+        table: data_table.DataTable,
+    ) -> None:
         mode = "w"
         if os.path.exists(path):
             mode = "a"

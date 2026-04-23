@@ -15,7 +15,7 @@ class GPSReader:
     def __init__(self,
         cfg: config.GPSConfig,
         status_collector: status_collector.StatusCollector|None = None,
-    ):
+    ) -> None:
         self.cfg = cfg
         self.status_collector = status_collector
 
@@ -35,7 +35,7 @@ class GPSReader:
     def is_ready(self) -> bool:
         return self._is_ready.is_set()
 
-    def _parse_line(self, line: str):
+    def _parse_line(self, line: str) -> None:
         try:
             # Not a valid NMEA sentence
             if not line.startswith("$"):
@@ -77,7 +77,7 @@ class GPSReader:
                 " signal issues.",
             )
 
-    def _sync_system_time(self, gps_time: datetime.datetime):
+    def _sync_system_time(self, gps_time: datetime.datetime) -> None:
         system_time = datetime.datetime.now(datetime.UTC)
         time_diff = abs((gps_time - system_time).total_seconds())
         if time_diff < 1:
@@ -108,7 +108,7 @@ class GPSReader:
     def get_last_fix(self) -> dict:
         return self.last_fix.copy()
 
-    def wait_for_gps(self):
+    def wait_for_gps(self) -> None:
         """Waits until a valid GPS fix is obtained or timeout occurs."""
         self._logger.info(
             "Waiting for GPS fix with at least 4 satellites and valid status...",
@@ -136,7 +136,7 @@ class GPSReader:
             f"GPS fix obtained with { self.last_fix['num_sats'] } satellites.",
         )
 
-    def gps_loop(self):
+    def gps_loop(self) -> None:
         """Main loop to read GPS data continuously."""
         try:
             with serial.Serial(self.gps_port, self.gps_baudrate, timeout=1) as ser:

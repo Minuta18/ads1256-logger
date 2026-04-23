@@ -4,7 +4,7 @@ import sys
 from seismo import config
 
 
-def setup_logging(cfg: config.Config):
+def setup_logging(cfg: config.Config) -> None:
     log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
     level_dict = {

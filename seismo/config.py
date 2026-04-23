@@ -1,3 +1,8 @@
+"""Configuration models for the seismology data logger.
+
+Defines Pydantic models for all configuration sections.
+"""
+
 import pipyadc.ADS1256_definitions as ads_defs
 import pydantic
 import pydantic_settings
@@ -6,11 +11,15 @@ VALID_GAINS = (1, 2, 4, 8, 16, 32, 64)
 VALID_SPS = (2.5, 10, 50, 100, 500, 1000, 2000, 7500, 15000, 30000)
 
 class SPIConfig(pydantic.BaseModel):
+    """Configuration for SPI bus connection."""
+
     spi_bus: int = 0
     spi_channel: int = 0
     spi_frequency: int = 976563
 
 class ADSPinsConfig(pydantic.BaseModel):
+    """Configuration for ADS1256 GPIO pins."""
+
     cs_pin: int = 22
     drdy_pin: int = 17
     reset_pin: int | None = 18
@@ -18,6 +27,8 @@ class ADSPinsConfig(pydantic.BaseModel):
     chip_select_gpios_initialize: tuple[int, ...] = (22, 23)
 
 class ADSChipConfig(pydantic.BaseModel):
+    """Configuration for ADS1256 chip parameters."""
+
     drdy_timeout: float = 2.0
     drdy_delay: float = 0.000001
     clkin_frequency: int = 7680000
@@ -25,6 +36,8 @@ class ADSChipConfig(pydantic.BaseModel):
     chip_id: int = 3
 
 class ADSConfig(pydantic.BaseModel):
+    """Configuration for ADS1256 device."""
+
     spi: SPIConfig = SPIConfig()
     pins: ADSPinsConfig = ADSPinsConfig()
     chip: ADSChipConfig = ADSChipConfig()
@@ -36,18 +49,26 @@ class ADSConfig(pydantic.BaseModel):
     active_channels: list[int] = pydantic.Field(default_factory=lambda: [0])
 
     @pydantic.field_validator("gain")
-    def check_gain(cls, v):
+    @classmethod
+    def check_gain(cls, v: int) -> int:
+        """Validate that gain is in allowed values."""
         if v not in VALID_GAINS:
-            raise ValueError(f"Gain must be one of {VALID_GAINS}")
+            msg = f"Gain must be one of {VALID_GAINS}"
+            raise ValueError(msg)
         return v
 
     @pydantic.field_validator("drate")
-    def check_sps(cls, v):
+    @classmethod
+    def check_sps(cls, v: float) -> float:
+        """Validate that SPS (drate) is in allowed values."""
         if v not in VALID_SPS:
-            raise ValueError(f"SPS (drate) must be one of {VALID_SPS}")
+            msg = f"SPS (drate) must be one of {VALID_SPS}"
+            raise ValueError(msg)
         return v
 
 class GPSConfig(pydantic.BaseModel):
+    """Configuration for GPS device."""
+
     gps_port: str = "/dev/ttyS0"
     gps_baudrate: int = 9600
 
@@ -55,14 +76,18 @@ class GPSConfig(pydantic.BaseModel):
     retry_interval: float = 5.0
 
 class WebServerConfig(pydantic.BaseModel):
-    host: str = "0.0.0.0"
+    """Configuration for web server."""
+
+    host: str = "127.0.0.1"
     port: int = 8000
     password_set: bool = False
-    password: str = "admin"
+    password: str = ""
     data_update_interval: float = 20.0
     start_server: bool = True
 
 class Config(pydantic_settings.BaseSettings):
+    """Main configuration class loaded from config.toml."""
+
     ads: ADSConfig = ADSConfig()
     gps: GPSConfig = GPSConfig()
     web_server: WebServerConfig = WebServerConfig()
@@ -78,10 +103,17 @@ class Config(pydantic_settings.BaseSettings):
     )
 
     @classmethod
-    def settings_customise_sources(cls, settings_cls, *args, **kwargs):
-        return (pydantic_settings.TomlConfigSettingsSource(
-            settings_cls, "config.toml",
-        ),)
+    def settings_customise_sources(
+        cls,
+        settings_cls: type["Config"],
+    ) -> tuple[pydantic_settings.TomlConfigSettingsSource, ...]:
+        """Configure settings to load from config.toml."""
+        return (
+            pydantic_settings.TomlConfigSettingsSource(
+                settings_cls,
+                "config.toml",
+            ),
+        )
 
 GAIN_MAP = { i: getattr(ads_defs, f"GAIN_{i}") for i in VALID_GAINS }
 SPS_MAP = {
@@ -90,7 +122,10 @@ SPS_MAP = {
 SPS_MAP[str(2.5)] = ads_defs.DRATE_2_5
 
 class LibConfigAdapter:
-    def __init__(self, config: ADSConfig):
+    """Adapter to convert config to pipyadc library format."""
+
+    def __init__(self, config: ADSConfig) -> None:
+        """Initialize adapter with config values."""
         self.SPI_BUS = config.spi.spi_bus
         self.SPI_CHANNEL = config.spi.spi_channel
         self.SPI_FREQUENCY = config.spi.spi_frequency
@@ -118,4 +153,7 @@ class LibConfigAdapter:
             getattr(ads_defs, f"POS_AIN{i}") | ads_defs.NEG_AINCOM
             for i in config.active_channels
         ]
-        self.mux = self.ch_sequence[0] if self.ch_sequence else ads_defs.POS_AIN0 | ads_defs.NEG_AINCOM
+        self.mux = (
+            self.ch_sequence[0] if self.ch_sequence
+            else ads_defs.POS_AIN0 | ads_defs.NEG_AINCOM
+        )

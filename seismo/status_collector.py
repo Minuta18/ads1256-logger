@@ -1,5 +1,6 @@
 import threading
 import time
+import typing
 
 import psutil
 
@@ -7,7 +8,7 @@ from seismo import config, logging_utils
 
 
 class StatusCollector:
-    def __init__(self, cfg: config.Config):
+    def __init__(self, cfg: config.Config) -> None:
         self._logger = logging_utils.get_logger("SeismoLogger.StatusCollector")
 
         self._initial_time = time.time()
@@ -36,19 +37,19 @@ class StatusCollector:
         self._stop_event = threading.Event()
         self._thread = None
 
-    def start(self):
+    def start(self) -> None:
         self._thread = threading.Thread(
             target=self._run, daemon=True, name="StatusCollectorThread",
         )
         self._thread.start()
         self._logger.info("Worker started.")
 
-    def update_status(self, key, value):
+    def update_status(self, key: str, value: typing.Any) -> None:
         with self._lock:
             if key in self._data:
                 self._data[key] = value
 
-    def update_common_values(self):
+    def update_common_values(self) -> None:
         with self._lock:
             self._data["uptime"] = time.time() - self._initial_time
             self._data["is_running"] = True
@@ -57,7 +58,7 @@ class StatusCollector:
             self._data["disk_usage"] = psutil.disk_usage("/").percent
             self._data["last_update"] = time.time()
 
-    def _run(self):
+    def _run(self) -> None:
         while not self._stop_event.is_set():
             try:
                 self.update_common_values()
@@ -65,11 +66,11 @@ class StatusCollector:
                 self._logger.error(f"Error occurred while updating status: {e}")
             time.sleep(self._update_interval)
 
-    def get_all(self):
+    def get_all(self) -> dict[str, typing.Any]:
         with self._lock:
             return self._data.copy()
 
-    def stop(self):
+    def stop(self) -> None:
         self._stop_event.set()
         if self._thread:
             self._thread.join()

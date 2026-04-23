@@ -1,1 +1,1 @@
-from .gps_reader import GPSReader
+from .gps_reader import GPSReader as GPSReader

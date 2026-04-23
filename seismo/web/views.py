@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import time
 import typing
@@ -13,26 +15,28 @@ auth_manager = auth.AuthManager(cfg)
 
 data_receiver_instance = data_receiver.DataReceiver()
 
-def get_main_thread_data() -> dict:
+def get_main_thread_data() -> dict[str, typing.Any]:
     return data_receiver_instance.get_data()
 
+
 def get_fields(
-    source_dict: dict, fields: list[typing.Any],
-) -> dict:
+    source_dict: dict[str, typing.Any],
+    fields: list[str],
+) -> dict[str, typing.Any]:
     return {k: source_dict.get(k) for k in fields}
 
 initial_time = time.time()
 
 router = bottle.Bottle()
 
-def check_if_initialized():
+def check_if_initialized() -> None:
     if data_receiver_instance.status_collector is None:
         bottle.abort(503, json.dumps({
             "error": "System is still initializing",
         }))
 
 @router.get("/server_status")
-def server_status():
+def server_status() -> str:
     bottle.response.set_header("Content-Type", "application/json")
 
     return json.dumps({
@@ -41,7 +45,7 @@ def server_status():
     })
 
 @router.get("/seismo_status")
-def seismo_status():
+def seismo_status() -> str:
     data = get_main_thread_data()
 
     status = "ok" if data.get("is_running", False) else "stopped"
@@ -54,7 +58,7 @@ def seismo_status():
     })
 
 @router.get("/raspberry_status")
-def raspberry_status():
+def raspberry_status() -> str:
     bottle.response.set_header("Content-Type", "application/json")
 
     auth_manager.raise_if_not_authenticated()
@@ -62,12 +66,15 @@ def raspberry_status():
     check_if_initialized()
     data = get_main_thread_data()
 
-    return json.dumps(get_fields(data, [
-        "cpu_usage", "memory_usage", "disk_usage",
-    ]))
+    return json.dumps(
+        get_fields(
+            data,
+            ["cpu_usage", "memory_usage", "disk_usage"],
+        ),
+    )
 
 @router.get("/gps_data")
-def gps_data():
+def gps_data() -> str:
     bottle.response.set_header("Content-Type", "application/json")
 
     auth_manager.raise_if_not_authenticated()
@@ -83,7 +90,7 @@ def gps_data():
     })
 
 @router.get("/seismo_stats")
-def seismo_stats():
+def seismo_stats() -> str:
     bottle.response.set_header("Content-Type", "application/json")
 
     auth_manager.raise_if_not_authenticated()
@@ -91,12 +98,15 @@ def seismo_stats():
     check_if_initialized()
     data = get_main_thread_data()
 
-    return json.dumps(get_fields(data, [
-        "queue_load", "total_batches_saved", "last_batch_time",
-    ]))
+    return json.dumps(
+        get_fields(
+            data,
+            ["queue_load", "total_batches_saved", "last_batch_time"],
+        ),
+    )
 
 @router.get("/get_all_stats")
-def get_all_stats():
+def get_all_stats() -> str:
     bottle.response.set_header("Content-Type", "application/json")
 
     auth_manager.raise_if_not_authenticated()
@@ -106,17 +116,19 @@ def get_all_stats():
 
     return json.dumps({
         "status": "ok",
-        "raspberry_status": get_fields(data, [
-            "uptime", "cpu_usage", "memory_usage", "disk_usage",
-        ]),
+        "raspberry_status": get_fields(
+            data,
+            ["uptime", "cpu_usage", "memory_usage", "disk_usage"],
+        ),
         "gps": {
             "lat": data.get("gps_lat"),
             "lon": data.get("gps_lon"),
             "alt": data.get("gps_alt"),
             "sats": data.get("gps_sats"),
         },
-        "seismo": get_fields(data, [
-            "queue_load", "total_batches_saved", "last_batch_time",
-        ]),
+        "seismo": get_fields(
+            data,
+            ["queue_load", "total_batches_saved", "last_batch_time"],
+        ),
     })
 
