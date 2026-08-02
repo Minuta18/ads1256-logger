@@ -1,6 +1,6 @@
 import typing
 
-from seismo import status_collector
+import status_collector
 
 
 class DataReceiver:

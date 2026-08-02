@@ -8,7 +8,8 @@ import typing
 
 import pipyadc
 
-from seismo import config, logging_utils
+import config
+import logging_utils
 
 
 class ADSReader:

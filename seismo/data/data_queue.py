@@ -8,7 +8,8 @@ import dataclasses
 import queue
 import threading
 
-from seismo import config, logging_utils
+import config
+import logging_utils
 
 from . import data_saver, data_table
 

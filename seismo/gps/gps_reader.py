@@ -6,7 +6,9 @@ import time
 import pynmea2
 import serial
 
-from seismo import config, logging_utils, status_collector
+import config
+import logging_utils
+import status_collector
 
 
 class GPSReader:

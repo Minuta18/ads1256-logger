@@ -5,7 +5,7 @@ import json
 
 import bottle
 
-from seismo import config
+import config
 
 
 class AuthManager:

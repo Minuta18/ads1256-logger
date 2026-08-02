@@ -100,13 +100,18 @@ class Config(pydantic_settings.BaseSettings):
 
     model_config = pydantic_settings.SettingsConfigDict(
         env_file_encoding="utf-8",
+        toml_file="config.toml"
     )
 
     @classmethod
     def settings_customise_sources(
         cls,
         settings_cls: type["Config"],
-    ) -> tuple[pydantic_settings.TomlConfigSettingsSource, ...]:
+        init_settings: pydantic_settings.PydanticBaseSettingsSource,
+        env_settings: pydantic_settings.PydanticBaseSettingsSource,
+        dotenv_settings: pydantic_settings.PydanticBaseSettingsSource,
+        file_secret_settings: pydantic_settings.PydanticBaseSettingsSource,
+    ) -> tuple[pydantic_settings.PydanticBaseSettingsSource, ...]:
         """Configure settings to load from config.toml."""
         return (
             pydantic_settings.TomlConfigSettingsSource(

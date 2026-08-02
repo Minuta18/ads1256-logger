@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from seismo import config
+import config
 
 
 def setup_logging(cfg: config.Config) -> None:

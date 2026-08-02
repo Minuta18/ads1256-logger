@@ -4,7 +4,8 @@ import typing
 
 import psutil
 
-from seismo import config, logging_utils
+import config
+import logging_utils
 
 
 class StatusCollector:

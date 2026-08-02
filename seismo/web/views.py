@@ -6,7 +6,7 @@ import typing
 
 import bottle
 
-from seismo import config
+import config
 
 from . import auth, data_receiver
 

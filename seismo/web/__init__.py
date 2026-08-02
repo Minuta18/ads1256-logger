@@ -2,7 +2,9 @@ import json
 
 import bottle
 
-from seismo import config, logging_utils, status_collector
+import config
+import logging_utils
+import status_collector
 
 from . import views
 

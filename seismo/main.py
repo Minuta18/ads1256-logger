@@ -9,9 +9,14 @@ import os
 import threading
 import time
 
-from seismo import config, logging_utils
+import config
+import logging_utils
 
-from . import ads_reader, data, gps, status_collector, web
+import ads_reader
+import data
+import gps
+import status_collector
+import web
 
 
 def create_saver(report_type: str) -> data.BaseSaver:
@@ -88,54 +93,55 @@ if __name__ == "__main__":
 
     try:
         current_sample = 1
-        with ads_reader.ADSReader(cfg) as reader:
-            while True:
-                current_path = generate_report_filename(cfg, current_sample)
-                start_iso = datetime.datetime.now(
-                    datetime.UTC).isoformat()
+        # with ads_reader.ADSReader(cfg) as reader:
+        while True:
+            current_path = generate_report_filename(cfg, current_sample)
+            start_iso = datetime.datetime.now(
+                datetime.UTC).isoformat()
 
-                data_batch = data_batch_template.get_copy_with_columns()
+            data_batch = data_batch_template.get_copy_with_columns()
 
-                start_perf = time.perf_counter()
-                for _ in range(cfg.buffer_size):
-                    sample = reader.read_channels_volts()
-                    offset = time.perf_counter() - start_perf
-                    data_batch.add_row_values([offset, sample[0]])
+            start_perf = time.perf_counter()
+            for _ in range(cfg.buffer_size):
+                # sample = reader.read_channels_volts()
+                sample = [0, 0, 0, 0, 0, 0, 0, 0]
+                offset = time.perf_counter() - start_perf
+                data_batch.add_row_values([offset, sample[0]])
 
-                data_queue.put(current_path, data_batch)
+            data_queue.put(current_path, data_batch)
 
-                current_gps = gps_reader.get_last_fix()
-                meta_row = index_table.get_copy_with_columns()
-                meta_row.add_row({
-                    "start_time": start_iso,
-                    "end_time": datetime.datetime.now(datetime.UTC)
-                        .isoformat(),
-                    "file_path": current_path,
-                    "drate": cfg.ads.drate,
-                    "sample_count": len(data_batch),
-                    "latitude": current_gps["lat"],
-                    "longitude": current_gps["lon"],
-                    "altitude": current_gps["alt"],
-                    "gps_satellites": current_gps["num_sats"],
-                })
+            current_gps = gps_reader.get_last_fix()
+            meta_row = index_table.get_copy_with_columns()
+            meta_row.add_row({
+                "start_time": start_iso,
+                "end_time": datetime.datetime.now(datetime.UTC)
+                    .isoformat(),
+                "file_path": current_path,
+                "drate": cfg.ads.drate,
+                "sample_count": len(data_batch),
+                "latitude": current_gps["lat"],
+                "longitude": current_gps["lon"],
+                "altitude": current_gps["alt"],
+                "gps_satellites": current_gps["num_sats"],
+            })
 
-                data_queue.put(index_table_path, meta_row)
+            data_queue.put(index_table_path, meta_row)
 
-                if current_sample % 10 == 0:
-                    logger.info(
-                        f"Collected {current_sample} samples. "
-                        f"Queue size: { len(data_queue) }",
-                    )
-
-                status_collector.update_status("queue_load", len(data_queue) / 20.0)
-                status_collector.update_status(
-                    "total_batches_saved", current_sample)
-                status_collector.update_status(
-                    "last_batch_time",
-                    datetime.datetime.now(datetime.UTC).isoformat(),
+            if current_sample % 10 == 0:
+                logger.info(
+                    f"Collected {current_sample} samples. "
+                    f"Queue size: { len(data_queue) }",
                 )
 
-                current_sample += 1
+            status_collector.update_status("queue_load", len(data_queue) / 20.0)
+            status_collector.update_status(
+                "total_batches_saved", current_sample)
+            status_collector.update_status(
+                "last_batch_time",
+                datetime.datetime.now(datetime.UTC).isoformat(),
+            )
+
+            current_sample += 1
     except KeyboardInterrupt:
         logger.info("Stopping data collection...")
     finally:
