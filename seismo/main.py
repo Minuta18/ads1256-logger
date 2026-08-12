@@ -1,46 +1,41 @@
 import time
 import logging
 from pipyadc import ADS1256
-from pipyadc.utils import TextScreen
 from pipyadc.ADS1256_definitions import *
 import pipyadc_config
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 
 print("\x1B[2J\x1B[H")
-print(__doc__)
+print("ADS1256 single-channel (AIN0) speed test.")
 print("\nPress CTRL-C to exit.\n")
 
-screen = TextScreen()
-
-def text_format_8_ch(digits, volts):
-    digits_str = ", ".join([f"{i: 8d}" for i in digits])
-    volts_str = ", ".join([f"{i: 8.3f}" for i in volts])
-    text = ("    AIN0,     AIN1,     AIN2,     AIN3, "
-            "    AIN4,     AIN5,     AIN6,     AIN7\n"
-            f"{digits_str}\n\n"
-            "Values converted to volts:\n"
-            f"{volts_str}\n"
-            )
-    return text
-
-POTI = POS_AIN0 | NEG_AINCOM
-LDR = POS_AIN1 | NEG_AINCOM
-CH2 = POS_AIN2 | NEG_AINCOM
-CH3 = POS_AIN3 | NEG_AINCOM
-CH4 = POS_AIN4 | NEG_AINCOM
-CH5 = POS_AIN5 | NEG_AINCOM
-CH6 = POS_AIN6 | NEG_AINCOM
-CH7 = POS_AIN7 | NEG_AINCOM
-
-CH_SEQUENCE = POTI
+CH_SEQUENCE = (POS_AIN0 | NEG_AINCOM,)
 
 def loop_forever_measurements(ads):
+    sample_count = 0
+    start_time = time.perf_counter()
+    print_interval = 1.0
+
     while True:
         raw_channels = ads.read_sequence(CH_SEQUENCE)
-        voltages = [i * ads.v_per_digit for i in raw_channels]
-        screen.put(text_format_8_ch(raw_channels, voltages))
-        screen.refresh()
+        
+        sample_count += 1
+        current_time = time.perf_counter()
+        elapsed = current_time - start_time
+
+        if elapsed >= print_interval:
+            sps = sample_count / elapsed
+            voltage = raw_channels[0] * ads.v_per_digit
+            
+            print(
+                f"Speed: {sps:6.1f} samples/sec | "
+                f"AIN0 Raw: {raw_channels[0]:8d} | "
+                f"AIN0 Volts: {voltage:7.4f}V"
+            )
+            
+            sample_count = 0
+            start_time = current_time
 
 try:
     with ADS1256(pipyadc_config) as ads:
