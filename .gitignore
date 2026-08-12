@@ -3,3 +3,6 @@ __pycache__
 .vscode
 seismo_logger.py
 system.log
+cmake-build-debug
+cmake-build-release
+.idea
