@@ -43,20 +43,20 @@ CHIP_ID: int = 3
 # Tuple of all (chip select) GPIO numbers to be configured as an output and
 # initialised to (inactive) logic high state before bus communication starts.
 # Necessary for more than one SPI device if GPIOs are not otherwise handled.
-CHIP_SELECT_GPIOS_INITIALIZE: tuple[int, ...] = (9, 24)
+CHIP_SELECT_GPIOS_INITIALIZE: tuple[int, ...] = (8, 24)
 # Chip select GPIO pin number.
 # This is required as hardware chip select can not be used with the ADS125x
 # devices using this library
-CS_PIN: int = 24
+CS_PIN: int = 8
 # If DRDY is not connected to an input, a sufficient DRDY_TIMEOUT must be
 # specified further below and aquisition will be slower.
-DRDY_PIN: int = 18
+DRDY_PIN: int = 24
 # Hardware reset pin is optional but strongly suggested in case multiple devices
 # are connected to the bus as the ADS125x will lock-up in case multiple chips
 # are selected simultaneously by accident.
 RESET_PIN: int = None  # Set to None if not used.
 # Optional power down pin
-PDWN_PIN: int = 11  # Set to None if not used.
+PDWN_PIN: int = 17  # Set to None if not used.
 ###############################################################################
 
 ##################  ADS1256 Constant Configuration Settings  ##################
