@@ -7,9 +7,10 @@
 typedef struct spidev_device spidev_device_t;
 
 typedef struct {
-        uint32_t spi_speed;
+        uint32_t spi_speed_hz;
         uint8_t  spi_mode;
         uint8_t  spi_bus;
+        uint8_t  spi_bits;
         uint8_t  chip_select;
 } spidev_config_t;
 
@@ -18,8 +19,10 @@ void spidev_close(spidev_device_t* device);
 int spidev_transfer(
         spidev_device_t* device,
         const uint8_t *transfer_buf,
-        const uint8_t *receive_buf,
+        uint8_t *receive_buf,
         size_t length
 );
+
+const spidev_config_t* spidev_get_config(spidev_device_t* device);
 
 #endif // ADS1256_LOGGER_SPIDEV_H
