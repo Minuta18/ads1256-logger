@@ -59,6 +59,9 @@ typedef struct {
         spidev_device_t *spidev;
         uint8_t drate;
         uint8_t gain;
+
+        uint8_t drdy_gpio;
+        uint8_t pdwn_gpio;
 } ads1256_config_t;
 
 typedef struct ads1256_device ads1256_device_t;
