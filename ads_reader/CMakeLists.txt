@@ -1,7 +1,7 @@
 add_library(ads_reader SHARED
-        src/ads_reader.c
+        src/ads1256.c
         src/spidev.c
-        include/spidev.h
+        src/ads_reader.c
 )
 
 target_include_directories(ads_reader PUBLIC

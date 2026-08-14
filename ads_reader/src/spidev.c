@@ -16,10 +16,10 @@ struct spidev_device {
         spidev_config_t config;
 };
 
-void spidev_construct_path(
+static void spidev_construct_path(
         const spidev_config_t* config,
         char* buf,
-        size_t len)
+        const size_t len)
 {
         snprintf(buf, len, "/dev/spidev%u.0", config->spi_bus);
 }
