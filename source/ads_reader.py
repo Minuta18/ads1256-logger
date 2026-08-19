@@ -1,5 +1,6 @@
 import os
 import ctypes
+import typing
 from typing import Optional
 
 lib_path = os.path.abspath(
@@ -47,6 +48,7 @@ class _Ads1256Config(ctypes.Structure):
         ("gain",         ctypes.c_uint8),
         ("drdy_gpio",     ctypes.c_uint8),
         ("pdwn_gpio",    ctypes.c_uint8),
+        ("gpio_name",    ctypes.c_char_p),
     ]
 
 class _Ads1256Device(ctypes.Structure):
@@ -65,67 +67,48 @@ _lib.ads1256_read_channel.argtypes = [
 ]
 _lib.ads1256_read_channel.restype = ctypes.c_int
 
+def _get_c_value(name: str, type: typing.Any) -> typing.Any:
+    return type.in_dll(_lib, name).value
+
 class Ads1256Commands:
-    WAKEUP   = 0x00
-    RDATA    = 0x01
-    RDATAC   = 0x03
-    SDATAC   = 0x0F
-    RREG     = 0x10
-    WREG     = 0x50
-    SELFCAL  = 0xF0
-    SELFOCAL = 0xF1
-    SELFGCAL = 0xF2
-    SYSOCAL  = 0xF3
-    SYSGCAL  = 0xF4
-    SYNC     = 0xFC
-    STANDBY  = 0xFD
-    RESET    = 0xFE
+    WAKEUP   = _get_c_value('ADS1256_CMD_WAKEUP', ctypes.c_uint8)
+    RDATA    = _get_c_value('ADS1256_CMD_RDATA', ctypes.c_uint8)
+    RDATAC   = _get_c_value('ADS1256_CMD_RDATAC', ctypes.c_uint8)
+    SDATAC   = _get_c_value('ADS1256_CMD_SDATAC', ctypes.c_uint8)
+    RREG     = _get_c_value('ADS1256_CMD_RREG', ctypes.c_uint8)
+    WREG     = _get_c_value('ADS1256_CMD_WREG', ctypes.c_uint8)
+    SELFCAL  = _get_c_value('ADS1256_CMD_SELFCAL', ctypes.c_uint8)
+    SELFOCAL = _get_c_value('ADS1256_CMD_SELFOCAL', ctypes.c_uint8)
+    SELFGCAL = _get_c_value('ADS1256_CMD_SELFGCAL', ctypes.c_uint8)
+    SYSOCAL  = _get_c_value('ADS1256_CMD_SYSOCAL', ctypes.c_uint8)
+    SYSGCAL  = _get_c_value('ADS1256_CMD_SYSGCAL', ctypes.c_uint8)
+    SYNC     = _get_c_value('ADS1256_CMD_SYNC', ctypes.c_uint8)
+    STANDBY  = _get_c_value('ADS1256_CMD_STANDBY', ctypes.c_uint8)
+    RESET    = _get_c_value('ADS1256_CMD_RESET', ctypes.c_uint8)
 
 class Ads1256Registers:
-    STATUS = 0x00
-    MUX    = 0x01
-    ADCON  = 0x02
-    DRATE  = 0x03
-    IO     = 0x04
-    OFC0   = 0x05
-    OFC1   = 0x06
-    OFC2   = 0x07
-    FSC0   = 0x08
-    FSC1   = 0x09
-    FSC2   = 0x0A
+    STATUS = _get_c_value('ADS1256_REG_STATUS', ctypes.c_uint8)
+    MUX    = _get_c_value('ADS1256_REG_MUX', ctypes.c_uint8)
+    ADCON  = _get_c_value('ADS1256_REG_ADCON', ctypes.c_uint8)
+    DRATE  = _get_c_value('ADS1256_REG_DRATE', ctypes.c_uint8)
+    IO     = _get_c_value('ADS1256_REG_IO', ctypes.c_uint8)
+    OFC0   = _get_c_value('ADS1256_REG_OFC0', ctypes.c_uint8)
+    OFC1   = _get_c_value('ADS1256_REG_OFC1', ctypes.c_uint8)
+    OFC2   = _get_c_value('ADS1256_REG_OFC2', ctypes.c_uint8)
+    FSC0   = _get_c_value('ADS1256_REG_FSC0', ctypes.c_uint8)
+    FSC1   = _get_c_value('ADS1256_REG_FSC1', ctypes.c_uint8)
+    FSC2   = _get_c_value('ADS1256_REG_FSC2', ctypes.c_uint8)
 
 def get_drate_value(drate: int) -> int:
-    drate_dict = {
-        2.5: 0x03,
-        5: 0x13,
-        10: 0x23,
-        15: 0x33,
-        25: 0x43,
-        30: 0x53,
-        50: 0x63,
-        60: 0x72,
-        100: 0x82,
-        500: 0x92,
-        1000: 0xA1,
-        2000: 0xB0,
-        3750: 0xC0,
-        7500: 0xD0,
-        15000: 0xE0,
-        30000: 0xF0
-    }
-    return drate_dict.get(drate, None)
+    drate_list = [2.5, 5, 10, 15, 25, 30, 50, 60, 100, 500, 1000, 2000, 3750, 7500, 15000, 30000]
+    if drate not in drate_list:
+        return None
+    if drate == 2.5:
+        return _get_c_value('ADS1256_PARAM_DRATE_2_5', ctypes.c_uint8)
+    return _get_c_value(f'ADS1256_PARAM_DRATE_{ drate }', ctypes.c_uint8)
 
 def get_gain_value(gain: int) -> int:
-    gain_dict = {
-        1: 0x00,
-        2: 0x01,
-        4: 0x02,
-        8: 0x03,
-        16: 0x04,
-        32: 0x05,
-        64: 0x06
-    }
-    return gain_dict.get(gain, None)
+    return _get_c_value(f'ADS1256_PARAM_GAIN_{ gain }', ctypes.c_uint8)
 
 
 class SPIBus:
@@ -177,7 +160,8 @@ class ADS1256:
         drate: int = 0xB0,
         gain: int = 0x00,
         drdy_gpio: int = ...,
-        pdwn_gpio: int = ...
+        pdwn_gpio: int = ...,
+        gpio_name: str = "gpiochip4"
     ):
         assert drdy_gpio != ..., "drdy_gpio must be specified"
         assert pdwn_gpio != ..., "pdwn_gpio must be specified"
@@ -188,7 +172,8 @@ class ADS1256:
             drate=drate,
             gain=gain,
             drdy_gpio=drdy_gpio,
-            pdwn_gpio=pdwn_gpio
+            pdwn_gpio=pdwn_gpio,
+            gpio_name=gpio_name.encode('utf-8')
         )
         self._dev: Optional[ctypes.POINTER(_Ads1256Device)] = None
 

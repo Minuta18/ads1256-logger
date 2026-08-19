@@ -31,12 +31,16 @@ def main() -> None:
     spi_bus = ads_reader.SPIBus()
     spi_bus.open()
 
-    ads_device = ads_reader.ADS1256Device(
-        drdy_gpio=17, pdwn_gpio=27
+    ads_device = ads_reader.ADS1256(
+        spi_bus,
+        drdy_gpio=17,
+        pdwn_gpio=27
     )
     ads_device.open()
 
-
+    for _ in range(20):
+        raw_val = ads_device.read_channel(0)
+        logging.info(f"Channel 0: {raw_val}")
 
     ads_device.close()
     spi_bus.close()

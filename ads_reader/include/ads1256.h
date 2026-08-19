@@ -1,6 +1,8 @@
 #ifndef ADS1256_LOGGER_ADS1256_H
 #define ADS1256_LOGGER_ADS1256_H
 
+#include <stdint.h>
+
 extern const uint8_t ADS1256_CMD_WAKEUP; /* Completes SYNC and exits standby mode */
 extern const uint8_t ADS1256_CMD_RDATA; /* Read data */
 extern const uint8_t ADS1256_CMD_RDATAC; /* Read data continuously */
@@ -62,14 +64,20 @@ typedef struct {
 
         uint8_t drdy_gpio;
         uint8_t pdwn_gpio;
+
+        char* gpio_name;
 } ads1256_config_t;
 
 typedef struct ads1256_device ads1256_device_t;
 
 ads1256_device_t *ads1256_open(const ads1256_config_t *config);
 void ads1256_close(ads1256_device_t *device);
-
 int ads1256_reset_chip(ads1256_device_t *device);
+
+int ads1256_gpio_open(ads1256_device_t *device);
+void ads1256_gpio_close(ads1256_device_t *device);
+
+int ads1256_wait_drdy(ads1256_device_t *device);
 int ads1256_read_channel(ads1256_device_t *device, uint8_t channel, int32_t *out);
 
 #endif // ADS1256_LOGGER_ADS1256_H
