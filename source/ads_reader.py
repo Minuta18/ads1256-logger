@@ -161,7 +161,7 @@ class ADS1256:
         gain: int = 0x00,
         drdy_gpio: int = ...,
         pdwn_gpio: int = ...,
-        gpio_name: str = "gpiochip4"
+        gpio_name: str = "/dev/gpiochip0"
     ):
         assert drdy_gpio != ..., "drdy_gpio must be specified"
         assert pdwn_gpio != ..., "pdwn_gpio must be specified"

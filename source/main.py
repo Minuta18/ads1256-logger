@@ -33,8 +33,8 @@ def main() -> None:
 
     ads_device = ads_reader.ADS1256(
         spi_bus,
-        drdy_gpio=17,
-        pdwn_gpio=27
+        drdy_gpio=24,
+        pdwn_gpio=17
     )
     ads_device.open()
 

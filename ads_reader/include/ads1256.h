@@ -79,5 +79,7 @@ void ads1256_gpio_close(ads1256_device_t *device);
 
 int ads1256_wait_drdy(ads1256_device_t *device);
 int ads1256_read_channel(ads1256_device_t *device, uint8_t channel, int32_t *out);
+int ads1256_read_reg(ads1256_device_t *device, uint8_t reg, uint8_t *out_val);
+int ads1256_diagnostics(ads1256_device_t *device);
 
 #endif // ADS1256_LOGGER_ADS1256_H

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -12,7 +13,6 @@
 
 struct spidev_device {
         int fd;
-
         spidev_config_t config;
 };
 
@@ -21,7 +21,7 @@ static void spidev_construct_path(
         char* buf,
         const size_t len)
 {
-        snprintf(buf, len, "/dev/spidev%u.0", config->spi_bus);
+        snprintf(buf, len, "/dev/spidev%u.%u", config->spi_bus, config->chip_select);
 }
 
 spidev_device_t* spidev_open(const spidev_config_t* config)
@@ -34,14 +34,13 @@ spidev_device_t* spidev_open(const spidev_config_t* config)
         spidev_device_t *device = malloc(sizeof(spidev_device_t));
         if (!device) {
                 perror("[SPI] Failed to allocate memory for SPI device.");
-                goto free_device_and_exit;
+                return NULL;
         }
         device->fd = NO_FILE;
         device->config = *config;
 
         char spi_path[SPI_PATH_SIZE];
-        spidev_construct_path(
-                &(device->config), spi_path, sizeof(spi_path));
+        spidev_construct_path(&(device->config), spi_path, sizeof(spi_path));
 
         printf("[SPI] Opening SPI device: %s\n", spi_path);
         device->fd = open(spi_path, O_RDWR);
@@ -68,25 +67,19 @@ spidev_device_t* spidev_open(const spidev_config_t* config)
                 goto free_device_and_exit;
         }
 
-        printf("[SPI] Initialized successfully.");
+        printf("[SPI] Initialized successfully.\n");
         return device;
 
 free_device_and_exit:
         if (device) {
                 spidev_close(device);
         }
-
         return NULL;
 }
 
 void spidev_close(spidev_device_t* device)
 {
         if (!device) { return; }
-
-        char spi_path[SPI_PATH_SIZE];
-        spidev_construct_path(
-                &(device->config), spi_path, sizeof(spi_path));
-        printf("[SPI] Closing SPI device: %s\n", spi_path);
 
         if (device->fd != NO_FILE)
                 close(device->fd);
@@ -100,11 +93,31 @@ int spidev_transfer(
         uint8_t *receive_buf,
         size_t length)
 {
-        if (!device) { return -1; }
+        if (!device || length == 0) { return -1; }
+
+        uint8_t *tx = (uint8_t *)transfer_buf;
+        uint8_t *rx = receive_buf;
+        int allocated_tx = 0;
+        int allocated_rx = 0;
+
+        if (!tx) {
+                tx = calloc(length, sizeof(uint8_t));
+                if (!tx) return -1;
+                allocated_tx = 1;
+        }
+
+        if (!rx) {
+                rx = malloc(length);
+                if (!rx) {
+                        if (allocated_tx) free(tx);
+                        return -1;
+                }
+                allocated_rx = 1;
+        }
 
         struct spi_ioc_transfer tr = {
-                .tx_buf = (unsigned long)transfer_buf,
-                .rx_buf = (unsigned long)receive_buf,
+                .tx_buf = (unsigned long)tx,
+                .rx_buf = (unsigned long)rx,
                 .len = length,
                 .speed_hz = device->config.spi_speed_hz,
                 .delay_usecs = 0,
@@ -113,8 +126,13 @@ int spidev_transfer(
 
         if (ioctl(device->fd, SPI_IOC_MESSAGE(1), &tr) < 0) {
                 perror("[SPI] Failed to send SPI transfer.");
+                if (allocated_tx) free(tx);
+                if (allocated_rx) free(rx);
                 return -1;
         }
+
+        if (allocated_tx) free(tx);
+        if (allocated_rx) free(rx);
 
         return 0;
 }
