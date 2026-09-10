@@ -140,6 +140,13 @@ int ads1256_reset_chip(ads1256_device_t *device)
         }
 
         usleep(ADS1256_TIME_RELOAD_MS * 1000);
+
+        cmd = ADS1256_CMD_SDATAC;
+        if (spidev_transfer(device->spidev, &cmd, NULL, 1) < 0) {
+                return -1;
+        }
+
+        usleep(ADS1256_TIME_RELOAD_MS * 1000);
         return 0;
 }
 
@@ -198,7 +205,7 @@ void ads1256_gpio_close(ads1256_device_t *device)
 
 int ads1256_wait_drdy(ads1256_device_t *device)
 {
-        if (!device || !device->drdy_line) return 0;
+        if (!device || !device->drdy_line) return -1;
 
         unsigned int drdy_offset = device->config.drdy_gpio;
 
@@ -222,19 +229,18 @@ int ads1256_read_reg(ads1256_device_t *device, uint8_t reg, uint8_t *out_val)
         }
 
         uint8_t tx_buf[2] = { (uint8_t)(ADS1256_CMD_RREG | reg), 0x00 };
-        uint8_t rx_buf[2] = { 0, 0 };
-
         if (spidev_transfer(device->spidev, tx_buf, NULL, 2) < 0) {
                 return -1;
         }
 
         usleep(10);
 
-        if (spidev_transfer(device->spidev, NULL, rx_buf, 1) < 0) {
+        uint8_t rx_val = 0;
+        if (spidev_transfer(device->spidev, NULL, &rx_val, 1) < 0) {
                 return -1;
         }
 
-        *out_val = rx_buf[0];
+        *out_val = rx_val;
         return 0;
 }
 
